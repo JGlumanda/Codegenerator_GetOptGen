@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<GetOptSetup SignPerLine="79">
+	<Author Name="Thomas Staudacher, Andreas Maus" Phone="07541-77-961003" Mail="thomas.staudacher@zf.com, andreas.maus@zf.com" />
+	<HeaderFileName>options.h</HeaderFileName>
+	<SourceFileName>options.cpp</SourceFileName>
+	<NameSpace>DHBW</NameSpace>
+	<ClassName>COptionParser</ClassName>
+	<OverAllDescription>
+		<Block>Erstellt einen Rumpf zum einlesen von Argumente aus der Kommandozeile.</Block>
+		<Block>Es kann sowohl mit innenliegenden Container wie externer Klassenanbindung eine Datenhaltung erfolgen.</Block>
+		<Block>Sobald ein Methodenaufruf abstrakt ist, wird die Basisklasse abstrakt.</Block>
+		<Block>Fuer die Formatierung der generierten Dateien wird astyle verwendet.</Block>
+	</OverAllDescription>
+	<SampleUsage>
+		<Sample>getoptgen [options] ... QUELLE</Sample>
+		<Sample>getoptgen [--out-path] ... QUELLE</Sample>
+	</SampleUsage>
+	<Options>
+		<!-- Option help greift auf die interne Klasseninterne Methode printHelp zu. Ein gleichzeitiger Aufruf mit version und parse-only ist nicht erlaubt.  -->
+		<Option Ref="1" ShortOpt="h" LongOpt="help" Exclusion="2,3" ConnectToInternalMethod="printHelp" Description="Diese Hilfe ausgeben und beenden" /> 
+		<!-- Option version greift auf die interne Klassenexterne (abstrakte) Methode printVersion zu. Ein gleichzeitiger Aufruf mit helpund parse-only  ist nicht erlaubt. -->
+		<Option Ref="2" ShortOpt="v" Interface="Version" Exclusion="1,3" ConnectToInternalMethod="printVersion" Description="Gibt die Version des Programms aus und beendet" /> 
+		<!-- Option out-path braucht ein zusätzliches Argument und schreibt auf einen Klassenintern generierten String das Argument. Die Option help, version und parse-only  darf nicht angegeben sein -->
+		<Option LongOpt="out-path" HasArguments="Required" Exclusion="1,2,3" Interface="OutputPath" Description="Der Pfad wo das Ergebnis hingenriert werden soll (sonst ins aktuelle Verzeichnis)" />
+		<Option LongOpt="astyle-path" HasArguments="Required" Interface="AstylePath" Exclusion="1,2,3" Description="Der Pfad wo die Astyle executable gefunden werden kann" />
+		<!-- Option sign-per-line kann ein zusätzliches Argument übergeben werden und schreibt auf einen Klassenintern generierten Integer SignPerLine. Wenn kein Parameter übergeben wird ist der Defaultwert 79. Die Option help, version und parse-only darf nicht angegeben sein -->
+		<Option LongOpt="sign-per-line" HasArguments="optional" Interface="SignPerLine" Exclusion="1,2,3" ConvertTo="Integer" DefaultValue="79" Description="Die Anzahl der Zeichen pro Linie für den Helptext. Ohne Argument wird der Standartwert genommen." />
+		<Option ShortOpt="n" LongOpt="only-if-newer" Interface="OnlyIfNewer" Exclusion="1,2,3" Description="Generiert nur wenn die Eingangsdatei neuer ist wie die bereits generierte" />
+		<Option LongOpt="no-format" Interface="NoFormat" Exclusion="1,2,3" Description="Erzeugte Datei wird nicht formatiert" />
+		<!-- Option parse-only liesst ein zusätzliches Argument ein und ruft die interne Klassenexterne (abstrakte) Methode ParseXML auf. Die Option help, version darf nicht angegeben sein -->
+		<Option Ref="3" LongOpt="parse-only" HasArguments="Required" ConnectToInternalMethod="ParseXML" Exclusion="1,2" Description="Parst die Datei einmal und beendet das Programm" />
+	</Options>
+</GetOptSetup>
