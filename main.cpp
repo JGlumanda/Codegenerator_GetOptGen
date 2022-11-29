@@ -11,8 +11,6 @@
 #include <iostream>
 #include <memory>
 
-#include 
-
 using namespace xercesc;
 using namespace std;
 
