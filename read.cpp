@@ -21,7 +21,7 @@ static const string getAttrStr(const char16_t *u_attr) {
     str_utf16.to_bytes(u_attr);
 }
 
-static const void recCommaInts(const string excStr, vector<uint8_t> exc, uint8_t start = 0) {
+static const void recCommaInts(const string excStr, vector<uint8_t> exc, int8_t start = 0) {
     uint8_t end = excStr.find(",", start);
     if (start == -1) {
         exc.push_back(stoi(excStr.substr(start, excStr.length() - start)));
@@ -76,6 +76,10 @@ Option::Option(DOMElement option) {
     ConnectToInternalMethod = getAttrStr(option.getAttribute(u"ConnectToInternalMethod"));
     ConnectToExternalMethod = getAttrStr(option.getAttribute(u"ConnectToExternalMethod"));
     Description = getAttrStr(option.getAttribute(u"Description"));
+}
+
+Attributes::Attributes(DOMElement root) {
+    
 }
 
 Attributes::~Attributes() {

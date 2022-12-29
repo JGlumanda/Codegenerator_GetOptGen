@@ -14,8 +14,8 @@
 using namespace xercesc;
 using namespace std;
 
-int main() {
-	const char* fileName;
+int main(int argc, char* argv[]) {
+	const char* fileName = argv[1];
 	try {
 		XMLPlatformUtils::Initialize();
 	}
@@ -37,6 +37,8 @@ int main() {
 
 	DOMDocument* doc = parser->getDocument();
 	DOMElement* e_root = doc->getDocumentElement();
+
+	cout << e_root;
 
 	XMLPlatformUtils::Terminate();
 	return 0;

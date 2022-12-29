@@ -23,7 +23,7 @@ public:
 
 class Attributes {
 public:
-    Attributes();
+    Attributes(xercesc::DOMElement e_root);
     ~Attributes();
 
     std::string Name, Phone, Mail, HeaderFileName, SourceFileName, NameSpace, ClassName, OverAllDescription, SampleUsage;
