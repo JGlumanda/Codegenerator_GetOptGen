@@ -18,7 +18,7 @@ using namespace std;
 
 static const string getAttrStr(const char16_t *u_attr) {
     wstring_convert<codecvt_utf8_utf16<char16_t>, char16_t> str_utf16;
-    str_utf16.to_bytes(u_attr);
+    return str_utf16.to_bytes(u_attr);
 }
 
 static const void recCommaInts(const string excStr, vector<uint8_t> exc, int8_t start = 0) {
