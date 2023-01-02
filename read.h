@@ -12,24 +12,26 @@
 
 class Option {
 public:
-    Option(xercesc::DOMElement option);
+    Option(xercesc::DOMElement* option);
 
     char ShortOpt;
     std::string LongOpt, Interface, DefaultValue, ConnectToInternalMethod, ConnectToExternalMethod, Description, ConvertTo;
     std::uint8_t ArgumentsReq;
-    std::uint8_t Ref;
+    std::int16_t Ref;
     std::vector<uint8_t> Exclusion;
 };
 
 class Attributes {
 public:
-    Attributes(xercesc::DOMElement e_root);
+    Attributes(const xercesc::DOMElement* root);
     ~Attributes();
 
-    std::string Name, Phone, Mail, HeaderFileName, SourceFileName, NameSpace, ClassName, OverAllDescription, SampleUsage;
-    int16_t SignPerLine;
+    std::string Name, Phone, Mail, HeaderFileName, SourceFileName, NameSpace, ClassName;
+    std::vector<std::string> OverAllDescription, SampleUsage;
+    int16_t SignPerLine = 79;
     void setSignPerLine(std::string str);
     void addOption(Option option);
+    const std::vector<Option>* getOption();
 private:
     std::vector<Option> Options;
 };

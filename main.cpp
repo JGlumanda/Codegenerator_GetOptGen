@@ -1,26 +1,28 @@
+#include "read.h"
+#include <cwchar>
 #include <locale>
 #include <stdint.h>
 #include <string>
 #include <iostream>
 #include <xercesc/util/PlatformUtils.hpp>
+#include <xercesc/dom/DOMNode.hpp>
+#include <xercesc/dom/DOMNodeList.hpp>
 #include <xercesc/util/XMLException.hpp>
 #include <xercesc/parsers/XercesDOMParser.hpp>
 #include <xercesc/sax/HandlerBase.hpp>
 #include <xercesc/util/PlatformUtils.hpp>
 #include <xercesc/dom/DOMDocument.hpp>
 #include <xercesc/dom/DOMElement.hpp>
+#include <xercesc/dom/DOMText.hpp>
 #include <iostream>
 #include <memory>
 #include <uchar.h>
 #include <codecvt>
+#include <xercesc/util/XercesDefs.hpp>
+#include <xercesc/util/Xerces_autoconf_config.hpp>
 
-XERCES_CPP_NAMESPACE_USE
+using namespace xercesc;
 using namespace std;
-static const string getAttrStr(const char16_t *u_attr) {
-    wstring_convert<codecvt_utf8_utf16<char16_t>, char16_t> str_utf16;
-    return str_utf16.to_bytes(u_attr);
-}
-
 
 int main(int argc, char* argv[]) {
 	const char* fileName = argv[1];
@@ -44,11 +46,10 @@ int main(int argc, char* argv[]) {
 	}
 
 	DOMDocument* doc = parser->getDocument();
-	DOMElement* e_root = doc->getDocumentElement();
+	DOMElement* root = doc->getDocumentElement();
+	Attributes attributes(root);
+	const Option* i = &attributes.getOption()->at(1);
+	cout << i->Interface << endl;
 
-	string s = getAttrStr(e_root->getAttribute(u"SignPerLine"));
-	cout << s << endl;
-	XMLPlatformUtils::Terminate();
 	return 0;
 }
-
