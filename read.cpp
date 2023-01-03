@@ -137,11 +137,12 @@ Option::Option(DOMElement* option) {
     recCommaInts(exclusion_str, Exclusion);
     ConvertTo = str16to8(option->getAttribute(u"ConvertTo"));
     string argStr = str16to8(option->getAttribute(u"HasArguments"));
+    //these are simular to the definitions in getopt_long
     if (argStr == "optional") {
-        ArgumentsReq = 1;
+        ArgumentsReq = 2;
     }
     else if (argStr == "required") {
-        ArgumentsReq = 2;
+        ArgumentsReq = 1;
     }
     else {
         ArgumentsReq = 0;
