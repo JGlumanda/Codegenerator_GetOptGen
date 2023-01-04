@@ -17,7 +17,6 @@
 #include <cstdint>
 #include <vector>
 #include <memory>
-#include <uchar.h>
 #include <xercesc/util/Xerces_autoconf_config.hpp>
 #include "read.h"
 
@@ -190,6 +189,6 @@ void Attributes::addOption(const Option new_option) {
     Options.push_back(new_option);
 }
 
-const vector<Option>* Attributes::getOption() {
+const vector<Option>* Attributes::getOption() const {
     return &Options;
 }

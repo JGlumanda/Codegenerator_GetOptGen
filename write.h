@@ -13,7 +13,7 @@ class File{
     std::string endString;
     static const Attributes *attributes;
     void addWithCurly(std::string scope, bool declaration);
-    virtual void writeCombined();
+    virtual void const writeCombined();
     protected:
     std::ofstream* fileStream;
 };
@@ -21,13 +21,13 @@ class File{
 class HeaderFile : File {
     public:
     HeaderFile(std::string fileName, Attributes* attributes);
-    ~HeaderFile();
     //write in Destructor
-    void writeCombined();
-    void addMethod(std::string method);
-    void addPrivate(std::string priVar);
-    void addPublic(std::string pubVar);
+    void const writeCombined();
     private:
+    void addMethod();
+    void addPrivate();
+    void addPublic();
+    void addHelpText();
     std::string publicVars;
     std::string privateVars;
     std::string publicMethods;
@@ -37,9 +37,8 @@ class HeaderFile : File {
 class SourceFile : File {
     public:
     SourceFile(std::string fileName, Attributes* attributes);
-    ~SourceFile();
     //write in Descructor
-    void writeCombined();
+    void const writeCombined();
     void addLongOpt();
     void addShortOpt();
     void addCase();

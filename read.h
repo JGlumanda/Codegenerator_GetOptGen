@@ -5,7 +5,6 @@
 #include <xercesc/dom/DOMElement.hpp>
 #include <xercesc/dom/DOMNodeList.hpp>
 #include <string>
-#include <uchar.h>
 #include <memory>
 #include <vector>
 #include <xercesc/util/Xerces_autoconf_config.hpp>
@@ -31,7 +30,7 @@ public:
     int16_t SignPerLine = 79;
     void setSignPerLine(std::string str);
     void addOption(Option option);
-    const std::vector<Option>* getOption();
+    const std::vector<Option>* getOption() const;
 private:
     std::vector<Option> Options;
 };
