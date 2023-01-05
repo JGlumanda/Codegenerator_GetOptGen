@@ -3,34 +3,30 @@
 
 #include <fstream>
 #include <string>
+#include <vector>
 #include "read.h"
 
 class File{
     public:
-    File(std::string fileName, Attributes*attributes);
+    File(std::string fileName, Attributes& attributes);
     ~File();
     std::string startString;
     std::string endString;
-    static const Attributes *attributes;
     void addWithCurly(std::string scope, bool declaration);
-    virtual void const writeCombined();
     protected:
-    std::ofstream* fileStream;
+    Attributes& attributes;
+    std::ofstream fileStream;
+    std::vector<std::pair<std::string, std::string>> methodWithVar;
 };
 
 class HeaderFile : File {
     public:
-    HeaderFile(std::string fileName, Attributes* attributes);
+    HeaderFile(Attributes& attributes);
     //write in Destructor
-    void const writeCombined();
+    void writeCombined() const;
+    void addMethod(std::vector<Option>::const_iterator option);
     private:
-    void addMethod();
-    void addPrivate();
-    void addPublic();
-    void addHelpText();
-    std::string publicVars;
-    std::string privateVars;
-    std::string publicMethods;
+    void addHelpText(const std::string addText);
     std::string helpText;
 };
 
@@ -38,12 +34,13 @@ class SourceFile : File {
     public:
     SourceFile(std::string fileName, Attributes* attributes);
     //write in Descructor
-    void const writeCombined();
+    void writeCombined() const;
+    void addMethod(std::vector<Option>& option);
+    private:
     void addLongOpt();
     void addShortOpt();
     void addCase();
     void addToHelp();
-    private:
     std::string longOptStruct;
     std::string shortOptString;
     std::string cases;

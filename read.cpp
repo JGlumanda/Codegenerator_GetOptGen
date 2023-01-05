@@ -1,7 +1,10 @@
 #include <cctype>
 #include <cstddef>
 #include <cstdlib>
+#include <cstring>
+#include <algorithm>
 #include <exception>
+#include <iostream>
 #include <locale>
 #include <codecvt>
 #include <sstream>
@@ -17,6 +20,7 @@
 #include <cstdint>
 #include <vector>
 #include <memory>
+#include <iterator>
 #include <xercesc/util/Xerces_autoconf_config.hpp>
 #include "read.h"
 
@@ -38,6 +42,29 @@ static const int32_t saveStoi(const string str) {
 static const string str16to8(const char16_t *u_attr) {
     wstring_convert<codecvt_utf8_utf16<char16_t>, char16_t> str_utf16;
     return str_utf16.to_bytes(u_attr);
+}
+
+/**
+ * @brief Checks if s1 is numerically bigger then s2.
+ * 
+ * @param s1 
+ * @param s2 
+ * @return true 
+ * @return false 
+ */
+static bool biggerStr(const char* s1, const char* s2) {
+    if (!s1 || !s2) return false;
+    while (*s1 && *s2) {
+        if (*s1 > *s2) {
+            return true;
+        }
+        if (*s1 < *s2) {
+            return false;
+        }
+        s1++;
+        s2++;
+    }
+    return false;
 }
 
 static const void recCommaInts(const string excStr, vector<uint8_t> exc, int8_t start = 0) {
@@ -88,12 +115,27 @@ static DOMElement* childElementByTag(const DOMElement* root, const XMLCh* name) 
     }
 }
 
+/**
+ * @brief Gets the text from he text node of an element.
+ * 
+ * @param root 
+ * @param name 
+ * @return string 
+ */
 static string textNoAttr(const DOMElement* root, const XMLCh* name) {
     DOMNode* node = (root->getElementsByTagName(name)->item(0));
     textNode(node);
     return textToString(node);
 }
 
+/**
+ * @brief textNoAttr for all subelements, which share the subtag name.
+ * 
+ * @param root
+ * @param name 
+ * @param subname 
+ * @param texts 
+ */
 static void subTextsNoAttr(const DOMElement* root, const XMLCh* name, const XMLCh* subname, vector<string>* texts) {
     DOMElement* element = childElementByTag(root, name);
     DOMNodeList* nodes = element->getElementsByTagName(subname);
@@ -103,6 +145,11 @@ static void subTextsNoAttr(const DOMElement* root, const XMLCh* name, const XMLC
     }
 }
 
+/**
+ * @brief All the Option parsing.
+ * 
+ * @param option 
+ */
 Option::Option(DOMElement* option) {
     // ReqFunc13 todo
     string refStr = str16to8(option->getAttribute(u"Ref"));
@@ -134,7 +181,20 @@ Option::Option(DOMElement* option) {
     // seperated by comma
     string exclusion_str = str16to8(option->getAttribute(u"Exclusion"));
     recCommaInts(exclusion_str, Exclusion);
-    ConvertTo = str16to8(option->getAttribute(u"ConvertTo"));
+    string convertType = str16to8(option->getAttribute(u"ConvertTo"));
+    //ReqFunc26,27,28
+    if (convertType.empty()) {
+        ConvertTo = "std::string";
+    }
+    else if (convertType == "Integer") {
+        ConvertTo = "int";
+    }
+    else if (convertType == "Bool") {
+        ConvertTo = "bool";
+    }
+    else {
+        exit(1);
+    }
     string argStr = str16to8(option->getAttribute(u"HasArguments"));
     //these are simular to the definitions in getopt_long
     if (argStr == "optional") {
@@ -154,6 +214,28 @@ Option::Option(DOMElement* option) {
     Description = str16to8(option->getAttribute(u"Description"));
 }
 
+static bool compByShort(const Option& o1, const Option& o2) {
+    bool o1ShortZero = o1.ShortOpt == '\0';
+    bool o2ShortZero = o2.ShortOpt == '\0';
+    if (o1ShortZero && o2ShortZero) {
+        return biggerStr(o2.LongOpt.c_str(), o1.LongOpt.c_str());
+    }
+    else if (o1ShortZero && !o2ShortZero) {
+        return false;
+    }
+    else if (!o1ShortZero && o2ShortZero) {
+        return true;
+    }
+    else {
+        return o1.ShortOpt < o2.ShortOpt;
+    }
+}
+
+/**
+ * @brief All the parsing happens here.
+ * 
+ * @param root 
+ */
 Attributes::Attributes(const DOMElement* root) {
     string signPerLineStr = str16to8(root->getAttribute(u"SignPerLine"));
     if (signPerLineStr.length() > 25) {
@@ -174,21 +256,32 @@ Attributes::Attributes(const DOMElement* root) {
         const Option new_option(option);
         addOption(new_option);
     }
+    sort(sortedOptions.begin(), sortedOptions.end(), compByShort);
 }
 
-Attributes::~Attributes() {
-	XMLPlatformUtils::Terminate(); // this class will call always call the destructor in the scope of main, so place everything here
-}
-
+/**
+ * @brief ReqFunc1. Sorts a new option into the vector, this justifies it being a vector
+ * 
+ * @param new_option 
+ */
 void Attributes::addOption(const Option new_option) {
-    for (auto & element:Options) {
-        if ((new_option.Ref != -1 && new_option.Ref == element.Ref) || (new_option.ShortOpt != '\0' && new_option.ShortOpt == element.ShortOpt) || (new_option.LongOpt.length() != 0 && new_option.LongOpt == element.LongOpt)) {
+    static vector<Option>::iterator position;
+    vector<Option>::iterator element;
+    for (element = sortedOptions.begin(); element != sortedOptions.end(); element++) {
+        bool hasShort = new_option.ShortOpt != '\0';
+        if ((new_option.Ref != -1 && new_option.Ref == element->Ref) || ( hasShort && new_option.ShortOpt == element->ShortOpt) || (new_option.LongOpt.length() != 0 && new_option.LongOpt == element->LongOpt)) {
+            cout << "Duplicate option" << endl;
             exit(1);
         }
     }
-    Options.push_back(new_option);
+    sortedOptions.push_back(new_option);
 }
 
-const vector<Option>* Attributes::getOption() const {
-    return &Options;
+/**
+ * @brief returns pointer to options
+ * 
+ * @return const vector<Option>* 
+ */
+const vector<Option>& Attributes::getOptions() const {
+    return sortedOptions;
 }

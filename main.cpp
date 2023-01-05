@@ -1,4 +1,5 @@
 #include "read.h"
+#include "write.h"
 #include <cwchar>
 #include <locale>
 #include <stdint.h>
@@ -16,7 +17,6 @@
 #include <xercesc/dom/DOMText.hpp>
 #include <iostream>
 #include <memory>
-#include <uchar.h>
 #include <codecvt>
 #include <xercesc/util/XercesDefs.hpp>
 #include <xercesc/util/Xerces_autoconf_config.hpp>
@@ -25,7 +25,8 @@ using namespace xercesc;
 using namespace std;
 
 int main(int argc, char* argv[]) {
-	const char* fileName = argv[1];
+	const char* xml = argv[1];
+	const char* headerFile = argv[2];
 	try {
 		XMLPlatformUtils::Initialize();
 	}
@@ -39,7 +40,7 @@ int main(int argc, char* argv[]) {
 	parser->setErrorHandler(&errHandler);
 
 	try {
-		parser->parse(fileName);
+		parser->parse(xml);
 	}
 	catch (...) {
 		return(1);
@@ -48,8 +49,6 @@ int main(int argc, char* argv[]) {
 	DOMDocument* doc = parser->getDocument();
 	DOMElement* root = doc->getDocumentElement();
 	Attributes attributes(root);
-	const Option* i = &attributes.getOption()->at(1);
-	cout << i->Interface << endl;
-
+	HeaderFile header(attributes);
 	return 0;
 }
