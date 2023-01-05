@@ -38,14 +38,14 @@ void File::addWithCurly(string scope, bool declaration) {
     }
 }
 
-static void appendWithSymbol(string str, const string append, const string sym) {
-    str.append(append).append(sym);
+static void appendWithSymbol(string &str, const string toAppend, const string sym) {
+    str.append(toAppend).append(sym);
 }
 
 HeaderFile::HeaderFile(Attributes& attributes) : File(attributes.HeaderFileName, attributes) {
     //startString
     vector<Option> options = File::attributes.getOptions();
-    endString = "#endif";
+    endString = "\n#endif";
     startString = "#ifndef GETOPT_CLASS\n#define GETOPT_CLASS\nnamespace ";
     if (File::attributes.NameSpace.length() > 0) {
         addWithCurly(File::attributes.NameSpace, false);
@@ -55,8 +55,9 @@ HeaderFile::HeaderFile(Attributes& attributes) : File(attributes.HeaderFileName,
         //only then methods
     }
 
-    for (vector<Option>::iterator element = options.begin(); element > options.end(); element++) {
+    for (vector<Option>::iterator element = options.begin(); element < options.end(); element++) {
         addMethod(element);
+        //addMethodtoHelpText
     }
 
     //helpText
@@ -69,9 +70,11 @@ HeaderFile::HeaderFile(Attributes& attributes) : File(attributes.HeaderFileName,
         appendWithSymbol(helpText, element, NL);
     }
     //ReqOptFunc1
+    //rework
     appendWithSymbol(helpText, attributes.Name, SP);
     appendWithSymbol(helpText, attributes.Mail, SP);
     appendWithSymbol(helpText, attributes.Phone, NL);
+
 }
 
 void HeaderFile::addMethod(vector<Option>::const_iterator option) {
@@ -82,20 +85,23 @@ void HeaderFile::addMethod(vector<Option>::const_iterator option) {
     //ReqFunc11,15
     if ((!hasExternal && !hasInternal && !hasInterface ) || hasInterface) {
         string isSet = "bool isSet";
+        string var = "bool ";
         if (longOptEmpty) {
             isSet += option->ShortOpt;
+            var += option->ShortOpt;
         }
         else {
             isSet += option->LongOpt;
+            var += option->LongOpt;
         }
         isSet += "()";
-        methodWithVar.push_back(make_pair(isSet, "bool"));
+        methodWithVar.push_back(make_pair(isSet, var));
     }
     //ReqFunc12,13
     if (hasInterface) {
-        string val;
-        string getValueOf = option->ConvertTo + " getValueof";
-        if (option->ArgumentsReq) {
+        if (option->ArgumentsReq > 0) {
+            string var = option->ConvertTo + " " + option->Interface;
+            string getValueOf = option->ConvertTo + " getValueof";
             if (longOptEmpty) {
                 getValueOf += option->ShortOpt;
             }
@@ -103,17 +109,38 @@ void HeaderFile::addMethod(vector<Option>::const_iterator option) {
                 getValueOf += option->LongOpt;
             }
             getValueOf += "()";
-            val = option->Interface;
+            if (option->ArgumentsReq == 2) {
+                var += "=" + option->DefaultValue;
+            }
+            methodWithVar.push_back(make_pair(getValueOf, var)); 
         }
-        if (option->ArgumentsReq == 2) {
-            val += "=" + option->DefaultValue;
-        }
-        methodWithVar.push_back(make_pair(getValueOf, val));
     }
 }
 
 void HeaderFile::addHelpText(const string addText) {
-    //signPerLine here
-    helpText += addText;
+    //ReqFunc4
+    if (addText.length() > attributes.SignPerLine) {
+        helpText += addText.substr(0,attributes.SignPerLine) + "\n";
+        addHelpText(addText.substr(attributes.SignPerLine));
+    }
+    else {
+        helpText += addText;
+    }
+}
+
+/**
+ * @brief Combines the HeaderFileString and writes it to the File.
+ * 
+ */
+void HeaderFile::writeCombined() {
+    string finalString = startString;
+    string methods = "public:", vars;
+    // fix
+    for (auto &element : methodWithVar) {
+        appendWithSymbol(methods, element.first, SC);
+        appendWithSymbol(vars, element.second, SC);
+    }
+    finalString += methods + "private:" + vars + endString;
+    fileStream << finalString << endl;
 }
 

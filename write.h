@@ -3,6 +3,7 @@
 
 #include <fstream>
 #include <string>
+#include <utility>
 #include <vector>
 #include "read.h"
 
@@ -13,9 +14,9 @@ class File{
     std::string startString;
     std::string endString;
     void addWithCurly(std::string scope, bool declaration);
+    std::ofstream fileStream;
     protected:
     Attributes& attributes;
-    std::ofstream fileStream;
     std::vector<std::pair<std::string, std::string>> methodWithVar;
 };
 
@@ -23,7 +24,7 @@ class HeaderFile : File {
     public:
     HeaderFile(Attributes& attributes);
     //write in Destructor
-    void writeCombined() const;
+    void writeCombined();
     void addMethod(std::vector<Option>::const_iterator option);
     private:
     void addHelpText(const std::string addText);

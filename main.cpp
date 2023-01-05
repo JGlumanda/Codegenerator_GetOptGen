@@ -50,5 +50,6 @@ int main(int argc, char* argv[]) {
 	DOMElement* root = doc->getDocumentElement();
 	Attributes attributes(root);
 	HeaderFile header(attributes);
+	header.writeCombined();
 	return 0;
 }
