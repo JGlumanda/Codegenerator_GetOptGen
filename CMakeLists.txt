@@ -4,10 +4,6 @@ project(Codegenerator_GetOptGen VERSION 1.0
         LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 14)
-set(XercesC_INCLUDE_DIR C:/xerces-c/include)
-set(XercesC_LIBRARY C:/xerces-c/lib)
-
-include_directories(.)
 
 add_executable(Codegenerator_GetOptGen
         main.cpp
@@ -17,5 +13,7 @@ add_executable(Codegenerator_GetOptGen
         write.h)
 
 find_package(XercesC REQUIRED)
+include_directories(src)
+include_directories(${PROJECT_SOURCE_DIR}/include)
 include_directories(${XercesC_INCLUDE_DIR})
-target_link_libraries(Codegenerator_GetOptGen ${Xerces_LIBRARY})
+target_link_libraries(Codegenerator_GetOptGen ${XercesC_LIBRARIES})
