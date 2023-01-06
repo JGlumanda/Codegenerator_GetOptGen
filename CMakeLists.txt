@@ -14,6 +14,5 @@ add_executable(Codegenerator_GetOptGen
 
 find_package(XercesC REQUIRED)
 include_directories(src)
-include_directories(${PROJECT_SOURCE_DIR}/include)
 include_directories(${XercesC_INCLUDE_DIR})
 target_link_libraries(Codegenerator_GetOptGen ${XercesC_LIBRARIES})
