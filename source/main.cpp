@@ -1,5 +1,5 @@
-#include "read.h"
-#include "write.h"
+#include "../header/read.h"
+#include "../header/write.h"
 #include <utility>
 #include <cwchar>
 #include <locale>
@@ -28,11 +28,25 @@
 using namespace xercesc;
 using namespace std;
 
+//string
+//connectToExternalMethod
+//with argumetn
+//Autor Name, Mail, Phone
+//cmake
+//helpText
+
+/**
+ * @brief Main Logic
+ * 
+ * @param argc 
+ * @param argv 
+ * @return int 
+ */
 int main(int argc, char** argv) {
 	int c;
 	int option_index = 0;
 	string helpText = "--path <path>\n--help";
-	const char* xml;
+	static const char* xml;
 	while(1) {
 		static struct option long_options[] = {
 			{"path", required_argument, 0, 1},
@@ -57,7 +71,7 @@ int main(int argc, char** argv) {
 				break;
 		}
 	}
-	if (!string(xml).empty()) {
+	if (xml != nullptr) {
 		try {
 			XMLPlatformUtils::Initialize();
 		}
@@ -80,6 +94,7 @@ int main(int argc, char** argv) {
 		DOMDocument* doc = parser->getDocument();
 		DOMElement* root = doc->getDocumentElement();
 		Attributes attributes(root);
+		XMLPlatformUtils::Terminate();
 		HeaderFile header(attributes);
 		SourceFile source(attributes, header.methodWithVar);
 		header.writeCombined();

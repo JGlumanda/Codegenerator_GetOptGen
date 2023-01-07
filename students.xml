@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<students>
+    <student deliver="true" surname="Lennart" name ="Schuster" mail="schuster.lenna-it21@it.dhbw-ravensburg." course="TIT21" \>
+    <student surname="Jonas" name="Berger" mail="optional" course="TIK21" \>
+</students>

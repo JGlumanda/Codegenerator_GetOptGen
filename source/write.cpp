@@ -1,5 +1,5 @@
-#include "read.h"
-#include "write.h"
+#include "../header/read.h"
+#include "../header/write.h"
 #include <algorithm>
 #include <fstream>
 #include <functional>
@@ -19,20 +19,37 @@
 
 using namespace std;
 
+/**
+ * @brief Construct a new File:: File object
+ * 
+ * @param fileName 
+ * @param attributes 
+ */
 File::File(std::string fileName, Attributes& attributes) : attributes(attributes) {
     try {
         fileStream.open(fileName, ios::out);
     }
     catch (...) {
+        cerr << "Coudn't open file." << endl;
         exit(1);
     }
     this->attributes = attributes;
 }
 
+/**
+ * @brief Destroy the File:: File object
+ * 
+ */
 File::~File() {
     fileStream.close();
 }
 
+/**
+ * @brief Adds something with curlies in startstring and endstring. If declaration is true, also adds a semicolon.
+ * 
+ * @param scope 
+ * @param declaration 
+ */
 void File::addWithCurly(string scope, bool declaration) {
     startString += scope + "{";
     if (declaration) {
@@ -43,10 +60,22 @@ void File::addWithCurly(string scope, bool declaration) {
     }
 }
 
+/**
+ * @brief Appends a string to a string, and adds a symbol at the end.
+ * 
+ * @param str 
+ * @param toAppend 
+ * @param sym 
+ */
 static void appendWithSymbol(string &str, const string toAppend, const string sym) {
     str.append(toAppend).append(sym);
 }
 
+/**
+ * @brief Construct a new Header File:: Header File object
+ * 
+ * @param attributes 
+ */
 HeaderFile::HeaderFile(Attributes& attributes) : File(attributes.HeaderFileName, attributes) {
     //startString
     vector<Option> options = File::attributes.getOptions();
@@ -85,6 +114,11 @@ HeaderFile::HeaderFile(Attributes& attributes) : File(attributes.HeaderFileName,
     addHelpText(help);
 }
 
+/**
+ * @brief Converts all - to _. Useful because - is not a legal character.
+ * 
+ * @param str 
+ */
 static void minusToUnderScore(string& str) {
     replace(str.begin(), str.end(), '-', '_');
 }
@@ -154,7 +188,7 @@ void HeaderFile::addMethod(vector<Option>::const_iterator option) {
 void HeaderFile::addHelpText(const string addText) {
     //ReqFunc4
     //fix with existing \n
-    if (addText.length() > attributes.SignPerLine) {
+    if(addText.find_first_of("\n") != string::npos) {
         helpText += addText.substr(0,attributes.SignPerLine) + LNL;
         addHelpText(addText.substr(attributes.SignPerLine));
     }
@@ -222,30 +256,41 @@ SourceFile::SourceFile(Attributes& attributes, vector<pair<string,string>> metho
         addMethod(element);
     }
     methods += "void " + attributes.ClassName + "::printHelp(){cout << helpText << endl;exit(1);}";
-    methods += "void " + attributes.ClassName + "::unknownOption(const string& unknown_option) { cout << \"Unknown Option:\" << unknown_option << \"\\ntry --help\"<< endl;exit(1);}";
+    methods += "void " + attributes.ClassName + "::unknownOption(const string& unknown_option) { cerr << \"Unknown Option:\" << unknown_option << \"\\ntry --help\"<< endl;exit(1);}";
     methods += "void " + attributes.ClassName+ "::parseOptions(int argc,char** argv) {int optind = 0;vector<int> history;while(1) {" + longOptStruct;
     methods += "int c=getopt_long(argc,argv,\"" +  shortOptString + "\",long_options,&optind);history.push_back(c);if (c==-1) {break;}switch(c) {";
-    methods += cases + "case '?':unknownOption(string(optarg));}}}";
+    methods += cases + "case'?':unknownOption(string(optarg));}}}";
 }
 
+/**
+ * @brief Adds Exclusions to generated File.
+ * 
+ * @param element 
+ */
 void SourceFile::excFunc(const Option& element) {
-    string c;
+    uint16_t c;
     if (!element.Exclusion.empty()) {
         cases += "if (";
         for (auto &refShort : refToShortOpt) {
-            if (*find(element.Exclusion.begin(), element.Exclusion.end(), refShort.first)){
-                cases += "*find(history.begin(), history.end(), " + to_string(refShort.second) + ")||;";
-                c = to_string(refShort.second);
+            if (*find(element.Exclusion.begin(), element.Exclusion.end(), refShort.first) != *element.Exclusion.end()){
+                cases += "*find(history.begin(), history.end(), " + to_string(refShort.second) + ") != *history.end()||";
+                c = refShort.second;
             }
         }
-        cases += "false){cout<<\"illegal combination with \"<<" + c +"<<endl;";
+        cases += "false){cerr<<\"illegal combination with \"<<" + to_string(c) +"<<\"endl\";}";
     }
 }
 
+/**
+ * @brief Wrapper for case generation.
+ * 
+ * @param element 
+ * @param cases 
+ */
 static void caseFunc(const Option& element, string& cases) {
     if (!element.Interface.empty() && element.ArgumentsReq) {
         if(element.ConvertTo == "int")
-            cases += element.Interface + "=stoi(optarg);";
+            cases += "try{" + element.Interface + "=stoi(optarg);}catch(...){cerr<<\"Argument not an int\"<<endl;}";
         else {
             cases += element.Interface + "=optarg;";
         }
@@ -261,23 +306,44 @@ static void caseFunc(const Option& element, string& cases) {
     }
 }
 
+/**
+ * @brief Adds a case.
+ * 
+ * @param element 
+ * @param shortOpt 
+ */
 void SourceFile::addCase(const Option& element, int shortOpt) {
     excFunc(element);
     cases += string("case ") + to_string(shortOpt) + ":";
     caseFunc(element, cases);
 }
 
+/**
+ * @brief Adds a case.
+ * 
+ * @param element 
+ * @param shortOpt 
+ */
 void SourceFile::addCase(const Option& element, char shortOpt) {
     excFunc(element);
     cases += string("case '") + shortOpt + "':";
     caseFunc(element, cases);
 }
 
+/**
+ * @brief Writes source file.
+ * 
+ */
 void SourceFile::writeCombined() {
     string combined = startString + methods;
     fileStream << combined << endl;
 }
 
+/**
+ * @brief Adds a generated method.
+ * 
+ * @param element 
+ */
 void SourceFile::addMethod(pair<string, string> element) {
         string type = element.first.substr(0, element.second.find_first_of(" ") + 1);
         string funcName = element.first.substr(element.first.find_first_of(" ") + 1);

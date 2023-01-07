@@ -7,6 +7,10 @@
 #include <vector>
 #include "read.h"
 
+/**
+ * @brief Describes a code file.
+ * 
+ */
 class File{
     public:
     std::vector<std::pair<std::string, std::string>> methodWithVar;
@@ -20,6 +24,10 @@ class File{
     Attributes& attributes;
 };
 
+/**
+ * @brief Describes a header file.
+ * 
+ */
 class HeaderFile : public File {
     public:
     HeaderFile(Attributes& attributes);
@@ -31,6 +39,10 @@ class HeaderFile : public File {
     std::string helpText;
 };
 
+/**
+ * @brief Describes a source file.
+ * 
+ */
 class SourceFile : File {
     public:
     SourceFile(Attributes& attributes, std::vector<std::pair<std::string,std::string>> methodWithVar);

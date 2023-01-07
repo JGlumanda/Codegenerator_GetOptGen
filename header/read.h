@@ -10,7 +10,12 @@
 #include <vector>
 #include <xercesc/util/Xerces_autoconf_config.hpp>
 
+void exitWithMessage(const std::string message);
 
+/**
+ * @brief Describes a getopt option.
+ * 
+ */
 class Option {
 public:
     Option(xercesc::DOMElement* option);
@@ -22,9 +27,14 @@ public:
     std::vector<uint8_t> Exclusion;
 };
 
+/**
+ * @brief Describes the xml attributes. Parsing is done here.
+ * 
+ */
 class Attributes {
 public:
     Attributes(const xercesc::DOMElement* root);
+    ~Attributes();
     std::string Name, Phone, Mail, HeaderFileName, SourceFileName, NameSpace, ClassName;
     std::vector<std::string> OverAllDescription, SampleUsage;
     uint16_t SignPerLine = 79;
